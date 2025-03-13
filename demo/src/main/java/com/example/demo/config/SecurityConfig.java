@@ -5,6 +5,7 @@ import com.example.demo.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsUtils;
 
 @Configuration
-
 public class SecurityConfig {
 
     @Autowired
@@ -26,10 +26,9 @@ public class SecurityConfig {
     @Autowired
     Filter filter;
 
-
     @Bean
-    public PasswordEncoder passwordEncoder(){
-        return  new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -37,16 +36,24 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors().and()
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                        .requestMatchers("/**").permitAll()
+                        // Cho phép truy cập các endpoint công khai
+                        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // Cho phép CORS pre-flight requests
+                        .requestMatchers("/api/login", "/api/register", "/api/refresh-token", "/api/forgot-password", "/api/reset-password").permitAll() // Các endpoint không cần xác thực
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll() // Cho phép truy cập Swagger
+
+                        // Phân quyền cho các endpoint quản lý người dùng (chỉ ADMIN)
+                        .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+
+                        // Phân quyền cho các endpoint báo cáo (chỉ ADMIN)
+                        .requestMatchers("/api/reports/**").hasAuthority("ADMIN")
+
+                        // Tất cả các request khác cần xác thực
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(authenticationService)
@@ -54,13 +61,4 @@ public class SecurityConfig {
                 .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-
-
-
-
-
-
-
-
 }

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 public class ProductRequest {
-    public long id = 0;
 
     @NotBlank
     public String name;

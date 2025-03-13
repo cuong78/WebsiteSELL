@@ -156,4 +156,40 @@ public class OrderService {
     }
 
 
+
+    // Lọc đơn hàng theo trạng thái và khoảng thời gian
+    public List<Order> filterOrders(OrderStatus status, Date startDate, Date endDate) {
+        if (status != null && startDate != null && endDate != null) {
+            return orderRepository.findByStatusAndCreateAtBetween(status, startDate, endDate);
+        } else if (status != null) {
+            return orderRepository.findByStatus(status);
+        } else if (startDate != null && endDate != null) {
+            return orderRepository.findByCreateAtBetween(startDate, endDate);
+        } else {
+            return orderRepository.findAll();
+        }
+    }
+
+    // Thống kê đơn hàng
+    public Map<String, Object> getOrderStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Đếm số lượng đơn hàng theo trạng thái
+        List<OrderStatus> statuses = List.of(OrderStatus.IN_PROGRESS, OrderStatus.PAID, OrderStatus.CANCELLED);
+        for (OrderStatus status : statuses) {
+            long count = orderRepository.findByStatus(status).size();
+            stats.put(status.name(), count);
+        }
+
+        // Tính tổng doanh thu
+        double totalRevenue = orderRepository.findAll().stream()
+                .filter(order -> order.getStatus() == OrderStatus.PAID)
+                .mapToDouble(Order::getTotal)
+                .sum();
+        stats.put("totalRevenue", totalRevenue);
+
+        return stats;
+    }
+
+
 }
