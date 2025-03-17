@@ -24,15 +24,26 @@ public class ProductService {
     @Autowired
     CategoryRepository categoryRepository;
 
+    @Autowired
+    FileStorageService fileStorageService;
+
     public List<Product> getAllProduct(){
         return productRepository.findProductsByIsDeletedFalse();
     }
 
-    public Product create(ProductRequest productRequest){
-        // product request => product entity
+    public Product create(ProductRequest productRequest) {
+        // Upload file và lấy tên file
+        String fileName = fileStorageService.storeFile(productRequest.getImage());
+
+        // Tạo sản phẩm từ request
         Product product = modelMapper.map(productRequest, Product.class);
-        Category category = categoryRepository.findCategoryById(productRequest.categoryId);
+        product.setImage(fileName); // Lưu tên file vào trường image
+
+        // Lấy danh mục từ categoryId
+        Category category = categoryRepository.findById(productRequest.getCategoryId())
+                .orElseThrow(() -> new NotFoundException("Category not found"));
         product.setCategory(category);
+
         return productRepository.save(product);
     }
 
@@ -54,11 +65,14 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Product not found"));
 
+        String fileName = fileStorageService.storeFile(request.getImage());
+
+
         // Cập nhật thông tin sản phẩm
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
-        product.setImage(request.getImage());
+        product.setImage(fileName); // Lưu tên file vào trường image
         product.setCode(request.getCode());
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new NotFoundException("Category not found"));

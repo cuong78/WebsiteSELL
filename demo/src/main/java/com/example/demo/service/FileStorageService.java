@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.entity.UploadedFile;
 import com.example.demo.repository.FileStorageRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -40,13 +41,7 @@ public class FileStorageService {
                 throw new RuntimeException("Failed to store empty file.");
             }
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Files.copy(file.getInputStream(), this.rootLocation.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-
-            // Tạo entity với ID là UUID
-            UploadedFile uploadedFile = new UploadedFile(fileName);
-            uploadedFile.setId(UUID.randomUUID().toString());
-
-            fileStorageRepository.save(uploadedFile);
+            Files.copy(file.getInputStream(), this.rootLocation.resolve(fileName));
             return fileName;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file.", e);
@@ -67,4 +62,16 @@ public class FileStorageService {
             throw new RuntimeException("Could not read file: " + fileName, e);
         }
     }
+
+
+
+    @PostConstruct
+    public void init() {
+        try {
+            Files.createDirectories(rootLocation);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not initialize storage location.", e);
+        }
+    }
+
 }
