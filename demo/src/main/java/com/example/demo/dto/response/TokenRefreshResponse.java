@@ -1,4 +1,4 @@
-package com.example.demo.entity.response;
+package com.example.demo.dto.response;
 
 public class TokenRefreshResponse {
     private String accessToken;

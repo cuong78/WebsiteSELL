@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.response.RevenueReport;
+import com.example.demo.dto.response.RevenueReport;
 import com.example.demo.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

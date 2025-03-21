@@ -1,10 +1,10 @@
-package com.example.demo.api;
+package com.example.demo.controller;
 
+import com.example.demo.dto.request.*;
 import com.example.demo.entity.Account;
 import com.example.demo.entity.RefreshToken;
-import com.example.demo.entity.request.*;
-import com.example.demo.entity.response.AuthenticationResponse;
-import com.example.demo.entity.response.TokenRefreshResponse;
+import com.example.demo.dto.response.AuthenticationResponse;
+import com.example.demo.dto.response.TokenRefreshResponse;
 import com.example.demo.exception.exceptions.TokenRefreshException;
 import com.example.demo.repository.AuthenticationRepository;
 import com.example.demo.repository.RefreshTokenRepository;
@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("api")
-public class AuthenticationAPI {
+public class AuthenticationController {
 
     @Autowired
     AuthenticationService authenticationService;

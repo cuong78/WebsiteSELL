@@ -1,13 +1,11 @@
 package com.example.demo.service;
 
 import com.example.demo.Utils.AccountUtils;
-import com.example.demo.entity.Account;
-import com.example.demo.entity.Order;
-import com.example.demo.entity.OrderDetail;
-import com.example.demo.entity.Product;
-import com.example.demo.entity.request.OrderDetailRequest;
-import com.example.demo.entity.request.OrderRequest;
+import com.example.demo.entity.*;
+import com.example.demo.dto.request.OrderDetailRequest;
+import com.example.demo.dto.request.OrderRequest;
 import com.example.demo.enums.OrderStatus;
+import com.example.demo.exception.exceptions.NotFoundException;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
@@ -39,37 +37,72 @@ public class OrderService {
     @Autowired
     AccountUtils accountUtils;
 
-    public String create(OrderRequest orderRequest) throws Exception {
+    @Autowired
+    DiscountService discountService;
 
-        float total =0 ;
+
+
+    public String create(OrderRequest orderRequest) throws Exception {
+        float total = 0;
 
         List<OrderDetail> orderDetails = new ArrayList<>();
         Order order = modelMapper.map(orderRequest, Order.class);
         order.setOrderDetails(orderDetails);
         order.setAccount(accountUtils.getCurrentAccount());
-        for(OrderDetailRequest orderDetailRequest: orderRequest.getDetails()){
+
+        // Tính toán giá trị đơn hàng
+        for (OrderDetailRequest orderDetailRequest : orderRequest.getDetails()) {
             OrderDetail orderDetail = new OrderDetail();
             Product product = productRepository.findProductById(orderDetailRequest.getProductId());
 
-            if(product.getQuantity()>=orderDetailRequest.getQuantity()){
+            if (product.getQuantity() >= orderDetailRequest.getQuantity()) {
+                // Tính giá sản phẩm sau khi áp dụng giảm giá (nếu có)
+                float productPrice = product.getPrice();
+                if (product.getDiscountPercentage() != null && product.getDiscountPercentage() > 0) {
+                    productPrice = productPrice * (1 - product.getDiscountPercentage() / 100);
+                }
 
-               orderDetail.setProduct(product);
-               orderDetail.setQuantity(orderDetailRequest.getQuantity());
-               orderDetail.setPrice(product.getPrice() * orderDetailRequest.getQuantity());
-               orderDetail.setOrder(order);
-               orderDetails.add(orderDetail);
-               product.setQuantity(product.getQuantity() - orderDetailRequest.getQuantity());
-               productRepository.save(product);
-               total += orderDetail.getPrice();
-           }else{
-                throw new RuntimeException("quantity is not enough");
+                orderDetail.setProduct(product);
+                orderDetail.setQuantity(orderDetailRequest.getQuantity());
+                orderDetail.setPrice(productPrice * orderDetailRequest.getQuantity());
+                orderDetail.setOrder(order);
+                orderDetails.add(orderDetail);
+
+                // Cập nhật số lượng sản phẩm
+                product.setQuantity(product.getQuantity() - orderDetailRequest.getQuantity());
+                productRepository.save(product);
+
+                // Cộng vào tổng giá trị đơn hàng
+                total += orderDetail.getPrice();
+            } else {
+                throw new RuntimeException("Số lượng sản phẩm không đủ");
             }
         }
+
+        // Áp dụng discount (nếu có và hợp lệ)
+        if (orderRequest.getDiscountId() != null) {
+            Discount discount = discountService.getActiveDiscount(orderRequest.getDiscountId());
+            if (discount != null) {
+                // Tính toán giảm giá
+                float discountAmount = (total * discount.getGlobalDiscountPercentage() / 100);
+                if (discount.getMaxDiscountAmount() != null && discountAmount > discount.getMaxDiscountAmount()) {
+                    discountAmount = discount.getMaxDiscountAmount();
+                }
+                total -= discountAmount;
+            }
+        }
+
+
         order.setTotal(total);
 
+        // Lưu đơn hàng
         Order newOrder = orderRepository.save(order);
+
+        // Tạo URL thanh toán
         return createURLPayment(newOrder);
     }
+
+
 
     public String createURLPayment(Order order) throws Exception{
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

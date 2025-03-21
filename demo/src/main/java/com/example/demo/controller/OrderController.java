@@ -1,10 +1,12 @@
-package com.example.demo.api;
+package com.example.demo.controller;
 
 import com.example.demo.entity.Order;
-import com.example.demo.entity.request.OrderRequest;
+import com.example.demo.dto.request.OrderRequest;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.service.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/order")
 @SecurityRequirement(name = "api")
-public class OrderAPI {
+public class OrderController {
 
     @Autowired
     OrderService orderService;
@@ -67,6 +69,8 @@ public class OrderAPI {
         Map<String, Object> stats = orderService.getOrderStatistics();
         return ResponseEntity.ok(stats);
     }
+
+
 
 
 }

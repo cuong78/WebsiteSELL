@@ -1,4 +1,4 @@
-package com.example.demo.api;
+package com.example.demo.controller;
 
 import com.example.demo.entity.Account;
 import com.example.demo.enums.RoleEnum;
@@ -6,7 +6,6 @@ import com.example.demo.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @SecurityRequirement(name = "api")
-public class UserAPI {
+public class UserController {
 
     @Autowired
     private UserService userService;

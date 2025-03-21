@@ -3,9 +3,9 @@ package com.example.demo.service;
 import com.example.demo.entity.Account;
 import com.example.demo.entity.PasswordResetToken;
 import com.example.demo.entity.RefreshToken;
-import com.example.demo.entity.request.AccountRequest;
-import com.example.demo.entity.request.AuthenticationRequest;
-import com.example.demo.entity.response.AuthenticationResponse;
+import com.example.demo.dto.request.AccountRequest;
+import com.example.demo.dto.request.AuthenticationRequest;
+import com.example.demo.dto.response.AuthenticationResponse;
 import com.example.demo.enums.RoleEnum;
 import com.example.demo.repository.AuthenticationRepository;
 import com.example.demo.repository.PasswordResetTokenRepository;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class AuthenticationService implements UserDetailsService {

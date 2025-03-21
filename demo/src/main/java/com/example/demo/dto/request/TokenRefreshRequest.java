@@ -1,4 +1,4 @@
-package com.example.demo.entity.request;
+package com.example.demo.dto.request;
 
 
 public class TokenRefreshRequest {

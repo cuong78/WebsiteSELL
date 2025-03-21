@@ -1,4 +1,4 @@
-package com.example.demo.entity.request;
+package com.example.demo.dto.request;
 
 public class AccountRequest {
     public String fullName;
